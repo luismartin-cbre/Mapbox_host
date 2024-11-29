@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox Draw Example</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.css" rel="stylesheet" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { width: 100%; height: 1200px; } /* Ajustar la altura del mapa */
+    </style>
+</head>
+<body>
+    <div id="map"></div> <!-- Este div contendrá el mapa -->
+    <script>
+        // Establece tu token de acceso a Mapbox
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2JyZWRlc2lnbiIsImEiOiJjbGE4MndlZ3AwMjZjM3ZtaXUwdG1rdjNvIn0.xmG8u3enVaFzhNdsS_H0Ug'; // Reemplaza con tu token de acceso real
+
+        // Inicializa el mapa
+        var map = new mapboxgl.Map({
+            container: 'map', // ID del div donde se mostrará el mapa
+            style: 'mapbox://styles/mapbox/streets-v11', // Estilo del mapa
+            center: [-74.006, 40.7128], // Posición inicial [lng, lat]
+            zoom: 10 // Nivel de zoom inicial
+        });
+
+        // Inicializa Mapbox Draw
+        var Draw = new MapboxDraw({
+            displayControlsDefault: true,
+            controls: {
+                polygon: true,
+                line_string: true,
+                point: true,
+                trash: true
+            }
+        });
+
+        map.addControl(Draw); // Agrega el control de Mapbox Draw al mapa
+
+        // Manejar eventos de dibujo
+        map.on('draw.create', updateArea);
+        map.on('draw.update', updateArea);
+        map.on('draw.delete', updateArea);
+
+        function updateArea(e) {
+            var data = Draw.getAll();
+            console.log(data); // Puedes usar los datos de geometría como desees
+            // Aquí puedes procesar los datos de las áreas dibujadas
+        }
+    </script>
+</body>
+</html>
