@@ -1,87 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mapbox Draw Example with Circles</title>
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.css" rel="stylesheet" />
-<link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.css" rel="stylesheet" />
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.js"></script>
-<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js"></script>
-<style>
-       body { margin: 0; padding: 0; }
-       #map { width: 100%; height: 100vh; }
-       #circle-button {
-           position: absolute;
-           top: 10px;
-           left: 10px;
-           background: white;
-           padding: 10px;
-           cursor: pointer;
-           z-index: 1;
-           border: 1px solid black;
-           border-radius: 5px;
-       }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox Draw Example with Circles</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.css" rel="stylesheet" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { width: 100%; height: 100vh; }
+        #circle-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-<div id="map"></div>
-<button id="circle-button">Dibujar Círculo</button>
-<script>
-       // Establece tu token de acceso a Mapbox
-       mapboxgl.accessToken = 'pk.eyJ1IjoiY2JyZWRlc2lnbiIsImEiOiJjbGE4MndlZ3AwMjZjM3ZtaXUwdG1rdjNvIn0.xmG8u3enVaFzhNdsS_H0Ug';
-       // Inicializa el mapa
-       var map = new mapboxgl.Map({
-           container: 'map',
-           style: 'mapbox://styles/mapbox/streets-v11',
-           center: [-74.006, 40.7128],
-           zoom: 10
-       });
-       // Inicializa Mapbox Draw
-       var Draw = new MapboxDraw({
-           displayControlsDefault: true,
-           controls: {
-               polygon: true,
-               line_string: true,
-               point: true,
-               trash: true
-           }
-       });
-       map.addControl(Draw);
-       // Función para calcular un círculo como un polígono
-       function createCircle(center, radiusInKm, points = 64) {
-           const coords = [];
-           const earthRadius = 6371; // Radio de la Tierra en km
-           const dLat = radiusInKm / earthRadius;
-           const dLng = dLat / Math.cos(center[1] * Math.PI / 180);
-           for (let i = 0; i <= points; i++) {
-               const angle = (i / points) * (2 * Math.PI);
-               const lat = center[1] + dLat * Math.sin(angle);
-               const lng = center[0] + dLng * Math.cos(angle);
-               coords.push([lng, lat]);
-           }
-           return {
-               type: 'Feature',
-               geometry: {
-                   type: 'Polygon',
-                   coordinates: [coords]
-               }
-           };
-       }
-       // Botón para dibujar un círculo
-       document.getElementById('circle-button').addEventListener('click', () => {
-           map.once('click', (e) => {
-               const center = [e.lngLat.lng, e.lngLat.lat];
-               const radius = prompt('Ingresa el radio del círculo en kilómetros:', 1);
-               if (radius && !isNaN(radius)) {
-                   const circle = createCircle(center, parseFloat(radius));
-                   Draw.add(circle); // Agrega el círculo como un polígono al mapa
-               } else {
-                   alert('Por favor, ingresa un número válido para el radio.');
-               }
-           });
-           alert('Haz clic en el mapa para establecer el centro del círculo.');
-       });
-</script>
+    <div id="map"></div>
+    <button id="circle-button">Dibujar Círculo</button>
+    <script>
+        // Establece tu token de acceso a Mapbox
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2JyZWRlc2lnbiIsImEiOiJjbGE4MndlZ3AwMjZjM3ZtaXUwdG1rdjNvIn0.xmG8u3enVaFzhNdsS_H0Ug';
+        
+        // Inicializa el mapa centrado en Madrid
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [-3.7038, 40.4168], // Coordenadas de Madrid
+            zoom: 10
+        });
+        
+        // Inicializa Mapbox Draw
+        var Draw = new MapboxDraw({
+            displayControlsDefault: true,
+            controls: {
+                polygon: true,
+                line_string: true,
+                point: true,
+                trash: true
+            }
+        });
+        map.addControl(Draw);
+        
+        // Función para calcular un círculo como un polígono
+        function createCircle(center, radiusInKm, points = 64) {
+            const coords = [];
+            const earthRadius = 6371; // Radio de la Tierra en km
+            const dLat = radiusInKm / earthRadius;
+            const dLng = dLat / Math.cos(center[1] * Math.PI / 180);
+            for (let i = 0; i <= points; i++) {
+                const angle = (i / points) * (2 * Math.PI);
+                const lat = center[1] + dLat * Math.sin(angle);
+                const lng = center[0] + dLng * Math.cos(angle);
+                coords.push([lng, lat]);
+            }
+            coords.push(coords[0]); // Cierra el polígono agregando la primera coordenada al final
+            return {
+                type: 'Feature',
+                geometry: {
+                    type: 'Polygon',
+                    coordinates: [coords]
+                }
+            };
+        }
+        
+        // Botón para dibujar un círculo
+        document.getElementById('circle-button').addEventListener('click', () => {
+            map.once('click', (e) => {
+                const center = [e.lngLat.lng, e.lngLat.lat];
+                const radius = prompt('Ingresa el radio del círculo en kilómetros:', 1);
+                if (radius && !isNaN(radius)) {
+                    const circle = createCircle(center, parseFloat(radius));
+                    Draw.add(circle); // Agrega el círculo como un polígono al mapa
+                } else {
+                    alert('Por favor, ingresa un número válido para el radio.');
+                }
+            });
+            alert('Haz clic en el mapa para establecer el centro del círculo.');
+        });
+    </script>
 </body>
 </html>
