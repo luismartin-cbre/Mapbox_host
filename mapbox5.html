@@ -2,57 +2,21 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Mapa con geometrías personalizadas</title>
+<title>Mapbox Draw Test</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Scripts y estilos de Mapbox -->
+<!-- Scripts de Mapbox GL -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
-<!-- Scripts y estilos de Mapbox Draw -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.3.2/mapbox-gl-draw.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.3.2/mapbox-gl-draw.css" rel="stylesheet">
+<!-- Scripts de Mapbox GL Draw -->
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.2/mapbox-gl-draw.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.2/mapbox-gl-draw.css" rel="stylesheet">
 <style>
-       body {
-           margin: 0;
-           padding: 0;
-       }
-       #map {
-           position: absolute;
-           top: 0;
-           bottom: 0;
-           width: 100%;
-       }
-       #coordinates {
-           position: absolute;
-           bottom: 10px;
-           left: 10px;
-           padding: 10px;
-           background-color: white;
-           font-size: 12px;
-           border-radius: 5px;
-           box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-           z-index: 1000;
-       }
-       #circle-button {
-           position: absolute;
-           top: 10px;
-           left: 10px;
-           padding: 10px;
-           background-color: #3887be;
-           color: white;
-           border: none;
-           border-radius: 3px;
-           cursor: pointer;
-           z-index: 1000;
-       }
-       #circle-button:hover {
-           background-color: #285f8f;
-       }
+       body { margin: 0; padding: 0; }
+       #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="coordinates">Las coordenadas aparecerán aquí</div>
-<button id="circle-button">Dibujar circunferencia</button>
 <script>
    // Token de Mapbox
    mapboxgl.accessToken = 'pk.eyJ1IjoiY2JyZWRlc2lnbiIsImEiOiJjbGE4MndlZ3AwMjZjM3ZtaXUwdG1rdjNvIn0.xmG8u3enVaFzhNdsS_H0Ug';
@@ -60,76 +24,27 @@
    const map = new mapboxgl.Map({
        container: 'map',
        style: 'mapbox://styles/mapbox/streets-v11',
-       center: [-3.70379, 40.41678], // Coordenadas de Madrid
+       center: [-3.70379, 40.41678], // Madrid
        zoom: 12
    });
-   // Añadir controles de navegación
-   map.addControl(new mapboxgl.NavigationControl());
-   // Verificar si MapboxDraw está disponible
-   if (typeof MapboxDraw === 'undefined') {
-       console.error('Mapbox Draw no se ha cargado correctamente.');
-       alert('Mapbox Draw no se ha cargado correctamente. Revisa tu conexión o dependencias.');
+   // Verificar si MapboxDraw está definido
+   if (typeof MapboxDraw !== 'undefined') {
+       console.log('MapboxDraw está disponible.');
+   } else {
+       console.error('MapboxDraw no está definido. Revisa la carga de la biblioteca.');
    }
    // Inicializar Mapbox Draw
    const Draw = new MapboxDraw({
-       displayControlsDefault: true, // Mostrar todos los controles predeterminados
+       displayControlsDefault: true,
        controls: {
-           point: true, // Dibujar puntos
-           line_string: true, // Dibujar líneas
-           polygon: true, // Dibujar polígonos
-           trash: true // Botón para eliminar geometrías
+           point: true,
+           line_string: true,
+           polygon: true,
+           trash: true
        }
    });
-   // Añadir los controles de Mapbox Draw al mapa
+   // Añadir controles de dibujo al mapa
    map.addControl(Draw);
-   // Contenedor para mostrar coordenadas de geometrías
-   const coordinatesContainer = document.getElementById('coordinates');
-   // Función para actualizar las coordenadas de las geometrías dibujadas
-   function updateCoordinates() {
-       const data = Draw.getAll();
-       if (data.features.length > 0) {
-           coordinatesContainer.innerHTML = `
-<strong>Geometrías:</strong><br>
-               ${JSON.stringify(data.features.map(f => f.geometry), null, 2)}
-           `;
-       } else {
-           coordinatesContainer.innerHTML = 'No hay geometrías dibujadas';
-       }
-   }
-   // Escuchar eventos de dibujo
-   map.on('draw.create', updateCoordinates);
-   map.on('draw.update', updateCoordinates);
-   map.on('draw.delete', updateCoordinates);
-   // Función para crear una circunferencia
-   function createCircle(center, radius, points) {
-       const coordinates = [];
-       for (let i = 0; i <= points; i++) {
-           const angle = (i / points) * (2 * Math.PI);
-           const dx = radius * Math.cos(angle);
-           const dy = radius * Math.sin(angle);
-           coordinates.push([center[0] + dx, center[1] + dy]);
-       }
-       return [coordinates];
-   }
-   // Manejar el clic en el botón de circunferencia
-   document.getElementById('circle-button').onclick = () => {
-       alert('Haz clic en el mapa para seleccionar el centro del círculo.');
-       map.once('click', (e) => {
-           const center = [e.lngLat.lng, e.lngLat.lat];
-           const radius = 0.01; // Radio del círculo en grados
-           const points = 64; // Resolución del círculo (más puntos = más suave)
-           const circleCoordinates = createCircle(center, radius, points);
-           // Agregar el círculo al mapa como un polígono
-           Draw.add({
-               type: 'Feature',
-               geometry: {
-                   type: 'Polygon',
-                   coordinates: circleCoordinates
-               }
-           });
-           updateCoordinates(); // Actualizar las coordenadas mostradas
-       });
-   };
 </script>
 </body>
 </html>
