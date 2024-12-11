@@ -10,7 +10,7 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js"></script>
 <style>
        body { margin: 0; padding: 0; }
-       #map { width: 100%; height: 100vh; } /* Ajustar la altura del mapa */
+       #map { width: 100%; height: 100vh; }
        #circle-button {
            position: absolute;
            top: 10px;
@@ -25,17 +25,17 @@
 </style>
 </head>
 <body>
-<div id="map"></div> <!-- Este div contendrá el mapa -->
+<div id="map"></div>
 <button id="circle-button">Dibujar Círculo</button>
 <script>
        // Establece tu token de acceso a Mapbox
        mapboxgl.accessToken = 'pk.eyJ1IjoiY2JyZWRlc2lnbiIsImEiOiJjbGE4MndlZ3AwMjZjM3ZtaXUwdG1rdjNvIn0.xmG8u3enVaFzhNdsS_H0Ug';
        // Inicializa el mapa
        var map = new mapboxgl.Map({
-           container: 'map', // ID del div donde se mostrará el mapa
-           style: 'mapbox://styles/mapbox/streets-v11', // Estilo del mapa
-           center: [-74.006, 40.7128], // Posición inicial [lng, lat]
-           zoom: 10 // Nivel de zoom inicial
+           container: 'map',
+           style: 'mapbox://styles/mapbox/streets-v11',
+           center: [-74.006, 40.7128],
+           zoom: 10
        });
        // Inicializa Mapbox Draw
        var Draw = new MapboxDraw({
@@ -47,28 +47,19 @@
                trash: true
            }
        });
-       map.addControl(Draw); // Agrega el control de Mapbox Draw al mapa
-       // Manejar eventos de dibujo
-       map.on('draw.create', updateArea);
-       map.on('draw.update', updateArea);
-       map.on('draw.delete', updateArea);
-       function updateArea(e) {
-           var data = Draw.getAll();
-           console.log(data); // Puedes usar los datos de geometría como desees
-       }
-       // Función para calcular un polígono circular
+       map.addControl(Draw);
+       // Función para calcular un círculo como un polígono
        function createCircle(center, radiusInKm, points = 64) {
            const coords = [];
-           const distanceInMeters = radiusInKm * 1000;
-           for (let i = 0; i < points; i++) {
+           const earthRadius = 6371; // Radio de la Tierra en km
+           const dLat = radiusInKm / earthRadius;
+           const dLng = dLat / Math.cos(center[1] * Math.PI / 180);
+           for (let i = 0; i <= points; i++) {
                const angle = (i / points) * (2 * Math.PI);
-               const dx = distanceInMeters * Math.cos(angle);
-               const dy = distanceInMeters * Math.sin(angle);
-               const offsetLng = dx / (111320 * Math.cos(center[1] * (Math.PI / 180)));
-               const offsetLat = dy / 110540;
-               coords.push([center[0] + offsetLng, center[1] + offsetLat]);
+               const lat = center[1] + dLat * Math.sin(angle);
+               const lng = center[0] + dLng * Math.cos(angle);
+               coords.push([lng, lat]);
            }
-           coords.push(coords[0]); // Cierra el polígono
            return {
                type: 'Feature',
                geometry: {
@@ -79,13 +70,12 @@
        }
        // Botón para dibujar un círculo
        document.getElementById('circle-button').addEventListener('click', () => {
-           // Inicia el proceso de dibujo de círculo
            map.once('click', (e) => {
-               const center = [e.lngLat.lng, e.lngLat.lat]; // Centro del círculo
-               const radius = prompt('Ingresa el radio del círculo en kilómetros:', 1); // Solicitar radio al usuario
+               const center = [e.lngLat.lng, e.lngLat.lat];
+               const radius = prompt('Ingresa el radio del círculo en kilómetros:', 1);
                if (radius && !isNaN(radius)) {
                    const circle = createCircle(center, parseFloat(radius));
-                   Draw.add(circle); // Agrega el círculo como un polígono
+                   Draw.add(circle); // Agrega el círculo como un polígono al mapa
                } else {
                    alert('Por favor, ingresa un número válido para el radio.');
                }
